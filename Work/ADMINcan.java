@@ -9,11 +9,11 @@ import java.util.*;
 
 public class ADMINcan {
     static Scanner in=new Scanner(System.in);
-
+    static Deque<DNASequence> undo=new ArrayDeque<>();
 
     public static void adminuse(){
         Scanner in=new Scanner(System.in);
-        System.out.println("ADMIN_Menu\n 1 adding in database\n 2 for delete in database \n 3 for update in database \n 4 for matching strings using id \n 5 list all database details \n 6 list all user \n 7 for list detail of particular patient");
+        System.out.println("ADMIN_Menu\n 1 adding in database\n 2 for delete in database \n 3 for update in database \n 4 for matching strings using id \n 5 list all database details \n 6 list all user \n 7 for list detail of particular patient \n 8 for delete User \n 9 9 for exiting the program \n 10 fro undo last command");
 
         while(true){
             int x=in.nextInt();
@@ -45,6 +45,10 @@ public class ADMINcan {
                 case 9:
                     System.out.println("Exiting as admin");
                     return;
+                case 10:
+                    System.out.println("undo last operation");
+                    undoLast();
+                    break;
                 default:
                     System.out.println("Please input right value");
                     break;
@@ -52,7 +56,6 @@ public class ADMINcan {
         }
     }
     public static void addPatient() {
-        HashMap<String,DNASequence> maa=new HashMap<>();
         System.out.print("Enter patient id");
         int id = in.nextInt();
         in.nextLine();
@@ -69,37 +72,52 @@ public class ADMINcan {
             }
             String sequence=sb.toString();
             DNASequence patient = new DNASequence(id,name,sequence);
-            maa.put(sequence,patient);
+            db.insert(patient);
             System.out.println("Patient added into memory.");
         } catch (Exception e) {
             System.out.println("Error loading file");
         }
-        db.insert(maa);
-        maa.clear();
 
     }
+
     public static void deletePatient() {
         System.out.print("Enter Patient ID to delete: ");
         int id = in.nextInt();
-        db.del(id);
+        DNASequence patient=db.getpatinetbyid(id);
+        if(patient!=null){
+            undo.push(patient);
+            db.del(id);
+            System.out.println("Patient deleted");
+        }
     }
+
     public static void updatePatientDNA() {
         System.out.print("Enter Patient ID to update DNA: ");
         int id = in.nextInt();
         in.nextLine();
+        DNASequence oldPatient = db.getpatinetbyid(id);
+        if(oldPatient!=null){
+            undo.push(oldPatient);
         System.out.print("Enter new DNA Sequence: ");
         String sequence = in.nextLine();
         db.updateDNASequence(id, sequence);
+            System.out.println("DNA updated");}
+        else{
+            System.out.println("patient not found");
+        }
     }
+
     public static void matchDNA() {
         System.out.print("Enter Patient ID1 and ID2 for DNA Match: ");
         int id1 = in.nextInt();
         int id2 = in.nextInt();
         db.matchDNA(id1,id2);
     }
+
     public static void listPatient() {
         db.readPatient();
     }
+
     public static void listAllUsers() {
         db.readAllUsers();
     }
@@ -114,6 +132,18 @@ public class ADMINcan {
         System.out.print("Enter User ID to delete: ");
         int id = in.nextInt();
         db.deleteUser(id);
+    }
+
+    public static void undoLast(){
+        if(!undo.isEmpty()){
+            DNASequence prev=undo.pop();
+            db.del(prev.getId());
+            db.insert(prev);
+            System.out.println("Undo successfull for patient with id"+prev.getId());
+        }
+        else{
+            System.out.println("Nothing to undo");
+        }
     }
 
 

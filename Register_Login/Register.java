@@ -15,6 +15,7 @@ public class Register {
                 break;
             } catch (Exception e) {
                 System.out.println("Please enter Integer Value");
+                break;
             }
         }
         in.nextLine();

@@ -13,10 +13,11 @@ import Work.ADMINcan;
 
 public class USERcan {
     static Scanner in=new Scanner(System.in);
-    static HashMap<String,DNASequence> pateintMap=new HashMap<>();
+    static HashMap<Integer, DNASequence> patientMap = new HashMap<>(); // Key: patient id
 
     public static void use(){
-        while(true){ System.out.println("Choose\n 1 Add patient from File  \n 2 Delete recent patinet details \n 3 Update details of Patient \n 4 List patient details \n 5 For adding all data in DB \n 6 for list particular person \n 7 for exit");
+        while(true){
+            System.out.println("Choose\n 1 Add patient from File  \n 2 Delete recent patinet details \n 3 Update details of Patient \n 4 List patient details \n 5 For adding all data in DB \n 6 for list particular person \n 7 for exit");
         int x=in.nextInt();
 
             switch (x){
@@ -40,7 +41,7 @@ public class USERcan {
                     list_recent_patients();
                     break;
                 case 5:
-                    db.insert(pateintMap);
+                    db.insert(patientMap);
                     break;
                 case 6:
                     System.out.println("Input patinet id");
@@ -59,6 +60,9 @@ public class USERcan {
             }
         }
     }
+
+
+    //BufferReading system and add in Map
     public static void addinMap() {
             in.nextLine();
             System.out.print("Enter patient id");
@@ -77,51 +81,48 @@ public class USERcan {
                 }
                 String sequence=sb.toString();
                 DNASequence patient = new DNASequence(id,name,sequence);
-                pateintMap.put(sequence,patient);
+                patientMap.put(id,patient);
                 System.out.println("Patient added into memory.");
             } catch (Exception e) {
                 System.out.println("Error loading file");
             }
     }
+
+    //search for person by id using getId in DNASequence and set the new name.
     public static void update(int id,String name){
         in.nextLine();
-        for (DNASequence dna : pateintMap.values()) {
-            if(dna.getId()==id){
-                dna.setpersonname(name);
-                System.out.println("Updated name");
-                return;
-            }
+        DNASequence dna = patientMap.get(id);
+        if (dna != null) {
+            dna.setpersonname(name);
+            System.out.println("Patient name updated.");
+        } else {
+            System.out.println("Patient not found.");
         }
-        System.out.println("Patient not found");
     }
+
+    //Print all patients in hashmap
     public static void list_recent_patients(){
-        for(DNASequence dna: pateintMap.values()){
-            System.out.println(dna.toString());
-        }
-    }
-    public static void list_particualarPatient(int id){
-    for(DNASequence dna:pateintMap.values()){
-        if(dna.getId()==id){
+        for(DNASequence dna: patientMap.values()){
             System.out.println(dna);
-            return;
         }
     }
-        System.out.println("Patient not found");
+
+    //find person by id by using same getId function from DNASequence and print his details by calling toString function
+    public static void list_particualarPatient(int id){
+        DNASequence dna = patientMap.get(id);
+        if (dna != null) {
+            System.out.println(dna);
+        } else {
+            System.out.println("Patient not found.");
+        }
     }
+
+    //find the person by id
     public static void delete(int id){
-        String remove=null;
-        for (Map.Entry<String, DNASequence> entry : pateintMap.entrySet()) {
-            if (entry.getValue().getId() == id) {
-                remove = entry.getKey();
-                break;
-            }
-        }
-        if (remove!=null){
-            pateintMap.remove(remove);
-            System.out.println("patinet deleted");
-        }
-        else {
-            System.out.println("patinet not found");
+        if (patientMap.remove(id) != null) {
+            System.out.println("Patient deleted.");
+        } else {
+            System.out.println("Patient not found.");
         }
     }
 }

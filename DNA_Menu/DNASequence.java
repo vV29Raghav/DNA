@@ -13,6 +13,8 @@ public class DNASequence {
         private LocalDate dateRecorded;
         private LocalTime timeRecorded;
 
+
+        //called whe we add file data to hashmap
         public DNASequence(int id,String name,String sequence) {
             this.id = id;
             this.personName = name;

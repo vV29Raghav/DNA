@@ -1,4 +1,5 @@
 package Database;
+import CLI_GUI.Graphical_User_Interface;
 import DNA_Menu.DNASequence;
 import Work.ADMINcan;
 import Work.USERcan;
@@ -14,6 +15,7 @@ public class db {
     private static final String USER = "root";
     private static final String PASSWORD = "Mapple28!";
 
+    //Prepare connection with database
     private static Connection getConnection() {
             try {
                 return  DriverManager.getConnection(URL, USER, PASSWORD);
@@ -23,7 +25,15 @@ public class db {
                 return null;
             }
     }
-    public static void insert(Map<String, DNASequence> patientMap){
+
+
+
+//<-------------------------------------------------UserWork-------------------------------------------------------->
+
+
+
+    //Insert Whole map data in Database
+    public static void insert(Map<Integer, DNASequence> patientMap){
         String insertSQL = "INSERT INTO dna_sequences (id, sequence, date, time, person_name) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(insertSQL)) {
@@ -43,62 +53,74 @@ public class db {
         }
     }
 
-    public static void del(int id) {
-        String query = "DELETE FROM dna_sequences WHERE id = ?";
-        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-            System.out.println("Patient deleted.");
+
+
+//<-------------------------------------------------AdminWork------------------------------------------------------>
+
+
+
+    //Insertion by Admin
+    public static void insert(DNASequence dna){
+        String insertSQL = "INSERT INTO dna_sequences (id, sequence, date, time, person_name) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(insertSQL)) {
+            pstmt.setInt(1, dna.getId());
+            pstmt.setString(2, dna.getSequence());
+            pstmt.setDate(3, dna.getDate());
+            pstmt.setTime(4, dna.getTime());
+            pstmt.setString(5, dna.getPersonName());
+            pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
 
+    //Delete patient by id done by admin
+    public static void del(int id) {
+        String query = "DELETE FROM dna_sequences WHERE id = ?";
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    //Update patinet sequence by admin using id
     public static void updateDNASequence(int id, String sequence) {
         String query = "UPDATE dna_sequences SET sequence = ? WHERE id = ?";
         try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, sequence);
             stmt.setInt(2, id);
             stmt.executeUpdate();
-            System.out.println("DNA sequence updated.");
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-        public static void readPatient() {
-            String query = "SELECT * FROM dna_sequences";
-            try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
-                ResultSet rs = stmt.executeQuery();
-                while (rs.next()) {
+
+    //Read all patients by admin
+    public static void readPatient() {
+        String query = "SELECT * FROM dna_sequences";
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
                     System.out.println("ID: " + rs.getInt("id"));
                     System.out.println("Name: " + rs.getString("person_name"));
                     System.out.println("DNA Sequence: " + rs.getString("sequence"));
                     System.out.println("Date: " + rs.getDate("date"));
                     System.out.println("Time: " + rs.getTime("time"));
                     System.out.println("-----------------------------");
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
             }
         }
-    public static void insert(String username,String password,int id) {
-       String insertQuery = "INSERT INTO users (username, password,id) VALUES (?, ?, ?)";
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(insertQuery)){
-            pstmt.setString(1,username);
-            pstmt.setString(2,password);
-            pstmt.setInt(3,id);
-            int rows=pstmt.executeUpdate();
-            if (rows > 0) {
-                System.out.println("Record inserted successfully.");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        catch (SQLException e) {
+                e.printStackTrace();
         }
     }
 
+
+    //Delete User by id by admin
     public static void deleteUser(int id) {
         String deleteQuery = "DELETE FROM users WHERE id = ?";
         try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(deleteQuery)) {
@@ -113,7 +135,7 @@ public class db {
     }
 
 
-
+    //Read Particular user by admin
     public static void readUser(int id) {
         String selectQuery = "SELECT * FROM users WHERE id = ?";
         try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(selectQuery)) {
@@ -131,6 +153,27 @@ public class db {
         }
     }
 
+
+    //get patient by admin using id
+    public static DNASequence getpatinetbyid(int id){
+        DNASequence patient=null;
+        String query = "SELECT * FROM dna_sequences WHERE id = ?";
+        try(Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(query)){
+            pstmt.setInt(1, id);
+            ResultSet rs=pstmt.executeQuery();
+            if(rs.next()){
+                String name=rs.getString("person_name");
+                String sequence=rs.getString("sequence");
+                patient=new DNASequence(id,name,sequence);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return patient;
+    }
+
+
+    //Read all user by admin
     public static void readAllUsers() {
         String selectQuery = "SELECT * FROM users";
         try (Connection conn = getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(selectQuery)) {
@@ -144,6 +187,8 @@ public class db {
         }
     }
 
+
+    //Match DNA by admin only
     public static void matchDNA(int id1,int id2) {
         String query = "SELECT sequence FROM dna_sequences WHERE id = ?";
         String seq1 = null;
@@ -188,6 +233,29 @@ public class db {
     }
 
 
+
+//<-------------------------------------------------------Register_Login--------------------------------------------->
+
+
+
+    //Register function called this insert to first initialize the connection with database then add the data to databse
+    public static void insert(String username,String password,int id) {
+        String insertQuery = "INSERT INTO users (username, password,id) VALUES (?, ?, ?)";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(insertQuery)){
+            pstmt.setString(1,username);
+            pstmt.setString(2,password);
+            pstmt.setInt(3,id);
+            int rows=pstmt.executeUpdate();
+            if (rows > 0) {
+                System.out.println("Record inserted successfully.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //Called by login class after identifying user or admin
     public static void login(String username, String password) {
         if (username.equals("raghav") && password.equals("fa11RAGHAV")) {
             System.out.println("Welcome Admin Raghav! Full permissions granted.");
@@ -221,6 +289,11 @@ public class db {
 
 
 
+//<---------------------------------------Graphical_User_Interface----------------------------------------------------->
+
+
+
+    //Add patient to database (GUI)
     public static void addPatient(int id, String name, String sequence) {
         String insertSQL = "INSERT INTO dna_sequences (id, sequence, person_name) VALUES (?, ?, ?)";
         try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(insertSQL)) {
@@ -234,7 +307,8 @@ public class db {
         }
     }
 
-    // Method to update a DNA sequence
+
+    // Method to update a DNA sequence(GUI)
     public static void updatePatient(int id, String newSequence) {
         String updateSQL = "UPDATE dna_sequences SET sequence = ? WHERE id = ?";
         try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(updateSQL)) {
@@ -247,7 +321,8 @@ public class db {
         }
     }
 
-    // Method to delete a DNA sequence
+
+    // Method to delete a DNA sequence(GUI)
     public static void deletePatient(int id) {
         String deleteSQL = "DELETE FROM dna_sequences WHERE id = ?";
         try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(deleteSQL)) {
@@ -259,7 +334,8 @@ public class db {
         }
     }
 
-    // Method to list all DNA sequences
+
+    // Method to list all DNA sequences(GUI)
     public static void listAllPatients() {
         String query = "SELECT * FROM dna_sequences";
         try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
