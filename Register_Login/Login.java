@@ -13,7 +13,8 @@ public class Login {
         username = in.nextLine();
         System.out.print("Enter your password: ");
         password = in.nextLine();
-        db.login(username,password);
+        String hashedPassword = DNA_Menu.Validation.hashPassword(password);
+        db.login(username,hashedPassword);
 
     }
 

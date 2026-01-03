@@ -256,8 +256,14 @@ public class db {
     }
 
     //Called by login class after identifying user or admin
-    public static void login(String username, String password) {
-        if (username.equals("raghav") && password.equals("fa11RAGHAV")) {
+    public static void login(String username, String passwordHash) {
+        // Admin hardcoded check - in a real app, this should be in DB too with a hash.
+        // For compatibility with the new Hashed system, we must match the Hash of the hardcoded password.
+        // Or simply allow the hardcoded check to remain plain text? 
+        // Logic: Login.java sends HASHED password. So we need to compare Hashed Input vs Hashed Hardcoded.
+        String adminPassHash = DNA_Menu.Validation.hashPassword("fa11RAGHAV");
+        
+        if (username.equals("raghav") && passwordHash.equals(adminPassHash)) {
             System.out.println("Welcome Admin Raghav! Full permissions granted.");
             ADMINcan.adminuse();
         }
@@ -268,7 +274,7 @@ public class db {
                  PreparedStatement pstmt = conn.prepareStatement(loginQuery)) {
 
                 pstmt.setString(1, username);
-                pstmt.setString(2, password);
+                pstmt.setString(2, passwordHash);
 
                 ResultSet rs = pstmt.executeQuery();
 
@@ -354,6 +360,25 @@ public class db {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    // Helper for GUI to get data as string
+    public static String returnAllPatientsData() {
+        String query = "SELECT * FROM dna_sequences";
+        StringBuilder sb = new StringBuilder();
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                sb.append("ID: ").append(rs.getInt("id"))
+                        .append(" | Name: ").append(rs.getString("person_name"))
+                        .append(" | Sequence: ").append(rs.getString("sequence"))
+                        .append("\n-------------------------------------------------------------\n");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "Error loading data.";
+        }
+        return sb.length() > 0 ? sb.toString() : "No records found.";
     }
 
 

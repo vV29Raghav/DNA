@@ -40,11 +40,44 @@ public class DNASequence {
         public void setpersonname(String personName) {
         this.personName = personName;
     }
+    // --- Scientific Analysis Features ---
+
+    // Calculate GC Content (percentage of G and C Bases)
+    public double calculateGCContent() {
+        if (sequence == null || sequence.isEmpty()) return 0.0;
+        long gcCount = sequence.chars().filter(ch -> ch == 'G' || ch == 'C').count();
+        return (double) gcCount / sequence.length() * 100.0;
+    }
+
+    // Generate Reverse Complement Strand
+    public String getReverseComplement() {
+        if (sequence == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = sequence.length() - 1; i >= 0; i--) {
+            char base = sequence.charAt(i);
+            switch (base) {
+                case 'A' -> sb.append('T');
+                case 'T' -> sb.append('A');
+                case 'C' -> sb.append('G');
+                case 'G' -> sb.append('C');
+                default -> sb.append(base);
+            }
+        }
+        return sb.toString();
+    }
+    
+    // Search for a specific motif (sub-sequence)
+    public boolean containsMotif(String motif) {
+        return sequence != null && sequence.contains(motif.toUpperCase());
+    }
+
+    @Override
     public String toString() {
         return "DNASequence{" +
                 "id=" + id +
                 ", personName='" + personName + '\'' +
                 ", sequence='" + sequence + '\'' +
+                ", GC Content=" + String.format("%.2f", calculateGCContent()) + "%" +
                 ", dateRecorded=" + dateRecorded +
                 ", timeRecorded=" + timeRecorded +
                 '}';

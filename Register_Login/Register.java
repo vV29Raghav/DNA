@@ -23,6 +23,7 @@ public class Register {
         username = in.nextLine();
         System.out.print("Enter password: ");
         password = in.nextLine();
-        db.insert(username,password,id);
+        String hashedPassword = DNA_Menu.Validation.hashPassword(password);
+        db.insert(username,hashedPassword,id);
     }
 }
