@@ -12,29 +12,27 @@ import Database.db;
 import Work.ADMINcan;
 
 public class USERcan {
-    static Scanner in=new Scanner(System.in);
+    // static Scanner in=new Scanner(System.in); // Removed unsafe scanner
     static HashMap<Integer, DNASequence> patientMap = new HashMap<>(); // Key: patient id
 
     public static void use(){
         while(true){
             System.out.println("Choose\n 1 Add patient from File  \n 2 Delete recent patinet details \n 3 Update details of Patient \n 4 List patient details \n 5 For adding all data in DB \n 6 for list particular person \n 7 for exit");
-        int x=in.nextInt();
+            int x = DNA_Menu.SafeInput.readInt("Choose Option: ");
 
             switch (x){
                 case 1:
                     addinMap();
                     break;
                 case 2:
-                    System.out.print("Enter patient ID to delete: ");
-                    int idtodelete = in.nextInt();
+                    int idtodelete = DNA_Menu.SafeInput.readInt("Enter patient ID to delete: ");
                     delete(idtodelete);
                     break;
                 case 3:
                     System.out.println("You can only change name of patient so enter patinet id");
                     //find the patient using patinet id
-                    int i=in.nextInt();
-                    System.out.println("Enter new name");
-                    String newname=in.nextLine();
+                    int i = DNA_Menu.SafeInput.readInt("Enter patient ID: ");
+                    String newname = DNA_Menu.SafeInput.readString("Enter new name: ");
                     update(i,newname);
                     break;
                 case 4:
@@ -44,8 +42,7 @@ public class USERcan {
                     db.insert(patientMap);
                     break;
                 case 6:
-                    System.out.println("Input patinet id");
-                    int b=in.nextInt();
+                    int b = DNA_Menu.SafeInput.readInt("Input patient ID: ");
                     list_particualarPatient(b);
                     break;
                 case 7:
@@ -64,14 +61,14 @@ public class USERcan {
 
     //BufferReading system and add in Map
     public static void addinMap() {
-            in.nextLine();
-            System.out.print("Enter patient id");
-            int id = in.nextInt();
-            in.nextLine();
-            System.out.print("Enter patient name: ");
-            String name = in.nextLine();
-            System.out.print("Enter file path of DNA sequence: ");
-            String path = in.nextLine();
+            int id = DNA_Menu.SafeInput.readInt("Enter patient id: ");
+            String name = DNA_Menu.SafeInput.readString("Enter patient name: ");
+            String path = DNA_Menu.SafeInput.readString("Enter file path of DNA sequence: ");
+            
+            if (!DNA_Menu.Validation.isValidFilePath(path)) {
+                System.out.println("Invalid file path.");
+                return;
+            }
 
             try (BufferedReader br = new BufferedReader(new FileReader(path))){
                 StringBuilder sb=new StringBuilder();
@@ -80,6 +77,12 @@ public class USERcan {
                     sb.append(line.trim().toUpperCase());
                 }
                 String sequence=sb.toString();
+                
+                if (!DNA_Menu.Validation.isValidDNA(sequence)) {
+                     System.out.println("Error: Invalid DNA sequence in file (only A, T, C, G allowed).");
+                     return;
+                }
+                
                 DNASequence patient = new DNASequence(id,name,sequence);
                 patientMap.put(id,patient);
                 System.out.println("Patient added into memory.");
@@ -90,7 +93,7 @@ public class USERcan {
 
     //search for person by id using getId in DNASequence and set the new name.
     public static void update(int id,String name){
-        in.nextLine();
+        // Removed unsafe in.nextLine()
         DNASequence dna = patientMap.get(id);
         if (dna != null) {
             dna.setpersonname(name);
