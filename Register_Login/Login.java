@@ -8,13 +8,15 @@ public class Login {
     private String username;
     private String password;
     public Login(){
-        Scanner in=new Scanner(System.in);
-        System.out.print("Enter worker name: ");
-        username = in.nextLine();
-        System.out.print("Enter your password: ");
-        password = in.nextLine();
+        username = DNA_Menu.SafeInput.readString("Enter worker name: ");
+        password = DNA_Menu.SafeInput.readString("Enter your password: ");
+        
+        if (username.isEmpty() || password.isEmpty()) {
+            System.out.println("Username and password cannot be empty.");
+            return;
+        }
+        
         db.login(username,password);
-
     }
 
 }

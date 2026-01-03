@@ -337,23 +337,26 @@ public class db {
 
     // Method to list all DNA sequences(GUI)
     public static void listAllPatients() {
+        JOptionPane.showMessageDialog(null, new JScrollPane(new JTextArea(returnAllPatientsData())), "All DNA Sequences", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    // Helper for GUI to get data as string
+    public static String returnAllPatientsData() {
         String query = "SELECT * FROM dna_sequences";
+        StringBuilder sb = new StringBuilder();
         try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
             ResultSet rs = stmt.executeQuery();
-            StringBuilder sb = new StringBuilder();
             while (rs.next()) {
                 sb.append("ID: ").append(rs.getInt("id"))
-                        .append(", Name: ").append(rs.getString("person_name"))
-                        .append(", Sequence: ").append(rs.getString("sequence"))
-                        .append("\n-----------------------------\n");
+                        .append(" | Name: ").append(rs.getString("person_name"))
+                        .append(" | Sequence: ").append(rs.getString("sequence"))
+                        .append("\n-------------------------------------------------------------\n");
             }
-            JTextArea textArea = new JTextArea(20, 50);
-            textArea.setText(sb.toString());
-            textArea.setEditable(false);
-            JOptionPane.showMessageDialog(null, new JScrollPane(textArea), "All DNA Sequences", JOptionPane.PLAIN_MESSAGE);
         } catch (SQLException e) {
             e.printStackTrace();
+            return "Error loading data.";
         }
+        return sb.length() > 0 ? sb.toString() : "No records found.";
     }
 
 
