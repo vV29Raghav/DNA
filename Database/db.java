@@ -13,7 +13,7 @@ import java.sql.Date;
 public class db {
     private static final String URL = "jdbc:mysql://localhost:3306/dna";
     private static final String USER = "root";
-    private static final String PASSWORD = "Mapple28!";
+    private static final String PASSWORD = "........!";
 
     //Prepare connection with database
     private static Connection getConnection() {
